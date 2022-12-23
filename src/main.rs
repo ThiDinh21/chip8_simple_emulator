@@ -9,6 +9,8 @@ impl CPU {
         let p = self.program_counter;
         let op_byte1 = self.memory[p] as u16;
         let op_byte2 = self.memory[p + 1] as u16;
+
+        // get opcode (a u16) by combining 2 u8
         op_byte1 << 8 | op_byte2
     }
 
@@ -35,6 +37,8 @@ impl CPU {
         let (val, overflow) = arg1.overflowing_add(arg2);
         self.registers[x as usize] = val;
 
+        // last register of CHIP-8 is a carry flag.
+        // If set indicates that an operation has overflowed the u8 register size
         if overflow {
             self.registers[0xF] = 1;
         } else {
