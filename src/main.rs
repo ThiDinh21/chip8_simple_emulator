@@ -109,14 +109,14 @@ impl CPU {
 
     /// 8xy4: add vy to vx
     fn add_xy(&mut self, x: u8, y: u8) {
-        let arg1 = self.registers[x as usize];
-        let arg2 = self.registers[y as usize];
+        let vx = self.registers[x as usize];
+        let vy = self.registers[y as usize];
 
-        let (val, overflow) = arg1.overflowing_add(arg2);
+        let (val, overflow) = vx.overflowing_add(vy);
         self.registers[x as usize] = val;
 
         // last register of CHIP-8 is a carry flag.
-        // If set indicates that an operation has overflowed the u8 register size
+        // if set indicates that an operation has overflowed the u8 register size
         if overflow {
             self.registers[0xF] = 1;
         } else {
