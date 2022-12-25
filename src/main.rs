@@ -6,6 +6,9 @@ struct CPU {
     stack_pointer: usize,
 }
 
+/// vx and vy are registers (0-F)
+/// kk is a number between 0 and 255.
+/// addr is an address between 0 and 4095.
 impl CPU {
     fn run(&mut self) {
         loop {
