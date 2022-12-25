@@ -82,7 +82,8 @@ impl CPU {
         self.program_counter = addr as usize;
     }
 
-    /// 0x3xkk: store if x equals y
+    /// 0x3xkk: store if vx == kk
+    /// 0x5xy0: store if vx == vy
     fn se(&mut self, x: u8, y: u8) {
         if x == y {
             self.program_counter += 2;
