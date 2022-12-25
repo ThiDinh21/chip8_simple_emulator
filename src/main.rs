@@ -7,33 +7,41 @@ struct CPU {
 }
 
 impl CPU {
-    fn read_opcode(&self) -> u16 {
-        let p = self.program_counter;
-        let op_byte1 = self.memory[p] as u16;
-        let op_byte2 = self.memory[p + 1] as u16;
-
-        // get opcode (a u16) by combining 2 u8
-        op_byte1 << 8 | op_byte2
-    }
-
     fn run(&mut self) {
         loop {
-            let opcode = self.read_opcode();
-            self.program_counter += 2;
+            let p = self.program_counter;
 
-            let c = ((opcode & 0xF000) >> 12) as u8;
+            let op_byte1 = self.memory[p] as u16;
+            let op_byte2 = self.memory[p + 1] as u16;
+            let opcode = (op_byte1 << 8) | op_byte2;
+
             let x = ((opcode & 0x0F00) >> 8) as u8;
             let y = ((opcode & 0x00F0) >> 4) as u8;
-            let d = ((opcode & 0x000F) >> 0) as u8;
 
-            match (c, x, y, d) {
-                (0, 0, 0, 0) => return,
-                (2, _, _, _) => {
-                    let addr = ((x as u16) << 8) | ((y as u16) << 4) | (d as u16);
-                    self.call(addr);
-                }
-                (0, 0, 0xE, 0xE) => self.ret(),
-                (0x8, _, _, 0x4) => self.add_xy(x, y),
+            let op_minor = (opcode & 0x000F) as u8;
+            let addr = opcode & 0x0FFF;
+
+            self.program_counter += 2; // 1 opcode = 2 u8
+
+            match (opcode) {
+                0x0000 => return,
+                0x00E0 => { /* CLRSCR */ }
+                0x00EE => self.ret(),
+                0x1000..=0x1FFF => todo!("jump to addr"),
+                0x2000..=0x2FFF => self.call(addr),
+                0x3000..=0x3FFF => todo!("set if equal"),
+                0x4000..=0x4FFF => todo!("set if not equal"),
+                0x5000..=0x5FFF => todo!("set if equal"),
+                0x6000..=0x6FFF => todo!("LD set kk to reg vk"),
+                0x7000..=0x7FFF => todo!("adds kk to reg vk"),
+                0x8000..=0x8FFF => match op_minor {
+                    0 => todo!("set x to reg y"),
+                    1 => todo!("x or y"),
+                    2 => todo!("x & y"),
+                    3 => todo!("x xor y"),
+                    4 => todo!("x+y"),
+                    _ => todo!("opcode: {:04x}", opcode),
+                },
                 _ => todo!("opcode {:04x}", opcode),
             };
         }
