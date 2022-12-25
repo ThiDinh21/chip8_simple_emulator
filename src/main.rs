@@ -18,6 +18,7 @@ impl CPU {
             let x = ((opcode & 0x0F00) >> 8) as u8;
             let y = ((opcode & 0x00F0) >> 4) as u8;
 
+            let kk = (opcode & 0x00FF) as u8;
             let op_minor = (opcode & 0x000F) as u8;
             let addr = opcode & 0x0FFF;
 
@@ -33,13 +34,13 @@ impl CPU {
                 0x4000..=0x4FFF => todo!("set if not equal"),
                 0x5000..=0x5FFF => todo!("set if equal"),
                 0x6000..=0x6FFF => todo!("LD set kk to reg vk"),
-                0x7000..=0x7FFF => todo!("adds kk to reg vk"),
+                0x7000..=0x7FFF => self.add(x, kk),
                 0x8000..=0x8FFF => match op_minor {
                     0 => todo!("set x to reg y"),
                     1 => todo!("x or y"),
                     2 => todo!("x & y"),
                     3 => todo!("x xor y"),
-                    4 => todo!("x+y"),
+                    4 => self.add_xy(x, y),
                     _ => todo!("opcode: {:04x}", opcode),
                 },
                 _ => todo!("opcode {:04x}", opcode),
@@ -47,6 +48,12 @@ impl CPU {
         }
     }
 
+    /// 0x7xkk
+    fn add(&mut self, vx: u8, kk: u8) {
+        self.registers[vx as usize] += kk;
+    }
+
+    /// 0x2nnn call sub-routine at addr
     fn call(&mut self, addr: u16) {
         let stack_ptr = self.stack_pointer;
         let stack = &mut self.stack;
@@ -60,6 +67,7 @@ impl CPU {
         self.program_counter = addr as usize;
     }
 
+    /// 0x00EE: return from the current sub-routine
     fn ret(&mut self) {
         if self.stack_pointer == 0 {
             panic!("Stack underflow!")
@@ -70,6 +78,7 @@ impl CPU {
         self.program_counter = call_addr as usize;
     }
 
+    // 0x8xy4
     fn add_xy(&mut self, x: u8, y: u8) {
         let arg1 = self.registers[x as usize];
         let arg2 = self.registers[y as usize];
