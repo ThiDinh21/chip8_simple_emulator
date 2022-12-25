@@ -37,7 +37,7 @@ impl CPU {
                     let vy = self.registers[y as usize];
                     self.se(vx, vy);
                 }
-                0x6000..=0x6FFF => todo!("LD set kk to reg vk"),
+                0x6000..=0x6FFF => self.set(x, kk),
                 0x7000..=0x7FFF => self.add(x, kk),
                 0x8000..=0x8FFF => match op_minor {
                     0 => todo!("set x to reg y"),
@@ -95,6 +95,11 @@ impl CPU {
         if vx != kk {
             self.program_counter += 2;
         }
+    }
+
+    /// 0x6xkk: set register x to kk
+    fn set(&mut self, x: u8, kk: u8) {
+        self.registers[x as usize] = kk;
     }
 
     /// 0x7xkk: add kk to register x
