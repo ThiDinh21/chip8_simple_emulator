@@ -52,7 +52,7 @@ impl CPU {
         }
     }
 
-    /// 0x00EE: return from the current sub-routine
+    /// 00EE: return from the current sub-routine
     fn ret(&mut self) {
         if self.stack_pointer == 0 {
             panic!("Stack underflow!")
@@ -63,12 +63,12 @@ impl CPU {
         self.program_counter = call_addr as usize;
     }
 
-    /// 0x1nnn: jump to nnn address
+    /// 1nnn: jump to nnn address
     fn jump(&mut self, addr: u16) {
         self.program_counter = addr as usize;
     }
 
-    /// 0x2nnn call sub-routine at addr
+    /// 2nnn: call sub-routine at addr
     fn call(&mut self, addr: u16) {
         let stack_ptr = self.stack_pointer;
         let stack = &mut self.stack;
@@ -82,32 +82,32 @@ impl CPU {
         self.program_counter = addr as usize;
     }
 
-    /// 0x3xkk: store if vx == kk
-    /// 0x5xy0: store if vx == vy
+    /// 3xkk: store if vx == kk
+    /// 5xy0: store if vx == vy
     fn se(&mut self, x: u8, y: u8) {
         if x == y {
             self.program_counter += 2;
         }
     }
 
-    /// 0x4xkk: store if vx not equal kk
+    /// 4xkk: store if vx not equal kk
     fn sne(&mut self, vx: u8, kk: u8) {
         if vx != kk {
             self.program_counter += 2;
         }
     }
 
-    /// 0x6xkk: set register x to kk
+    /// 6xkk: set register x to kk
     fn set(&mut self, x: u8, kk: u8) {
         self.registers[x as usize] = kk;
     }
 
-    /// 0x7xkk: add kk to register x
+    /// 7xkk: add kk to register x
     fn add(&mut self, vx: u8, kk: u8) {
         self.registers[vx as usize] += kk;
     }
 
-    // 0x8xy4
+    /// 8xy4: add vy to vx
     fn add_xy(&mut self, x: u8, y: u8) {
         let arg1 = self.registers[x as usize];
         let arg2 = self.registers[y as usize];
