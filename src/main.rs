@@ -30,9 +30,13 @@ impl CPU {
                 0x00EE => self.ret(),
                 0x1000..=0x1FFF => self.jump(addr),
                 0x2000..=0x2FFF => self.call(addr),
-                0x3000..=0x3FFF => todo!("set if equal"),
-                0x4000..=0x4FFF => todo!("set if not equal"),
-                0x5000..=0x5FFF => todo!("set if equal"),
+                0x3000..=0x3FFF => self.se(self.registers[x as usize], kk),
+                0x4000..=0x4FFF => self.sne(self.registers[x as usize], kk),
+                0x5000..=0x5FFF => {
+                    let vx = self.registers[x as usize];
+                    let vy = self.registers[y as usize];
+                    self.se(vx, vy);
+                }
                 0x6000..=0x6FFF => todo!("LD set kk to reg vk"),
                 0x7000..=0x7FFF => self.add(x, kk),
                 0x8000..=0x8FFF => match op_minor {
@@ -48,14 +52,20 @@ impl CPU {
         }
     }
 
+    /// 0x00EE: return from the current sub-routine
+    fn ret(&mut self) {
+        if self.stack_pointer == 0 {
+            panic!("Stack underflow!")
+        }
+
+        self.stack_pointer -= 1;
+        let call_addr = self.stack[self.stack_pointer];
+        self.program_counter = call_addr as usize;
+    }
+
     /// 0x1nnn: jump to nnn address
     fn jump(&mut self, addr: u16) {
         self.program_counter = addr as usize;
-    }
-
-    /// 0x7xkk: add kk to register x
-    fn add(&mut self, vx: u8, kk: u8) {
-        self.registers[vx as usize] += kk;
     }
 
     /// 0x2nnn call sub-routine at addr
@@ -72,15 +82,23 @@ impl CPU {
         self.program_counter = addr as usize;
     }
 
-    /// 0x00EE: return from the current sub-routine
-    fn ret(&mut self) {
-        if self.stack_pointer == 0 {
-            panic!("Stack underflow!")
+    /// 0x3xkk: store if x equals y
+    fn se(&mut self, x: u8, y: u8) {
+        if x == y {
+            self.program_counter += 2;
         }
+    }
 
-        self.stack_pointer -= 1;
-        let call_addr = self.stack[self.stack_pointer];
-        self.program_counter = call_addr as usize;
+    /// 0x4xkk: store if vx not equal kk
+    fn sne(&mut self, vx: u8, kk: u8) {
+        if vx != kk {
+            self.program_counter += 2;
+        }
+    }
+
+    /// 0x7xkk: add kk to register x
+    fn add(&mut self, vx: u8, kk: u8) {
+        self.registers[vx as usize] += kk;
     }
 
     // 0x8xy4
