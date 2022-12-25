@@ -39,10 +39,13 @@ impl CPU {
                 0x6000..=0x6FFF => self.set(x, kk),
                 0x7000..=0x7FFF => self.add(x, kk),
                 0x8000..=0x8FFF => match op_minor {
-                    0 => todo!("set x to reg y"),
-                    1 => todo!("x or y"),
-                    2 => todo!("x & y"),
-                    3 => todo!("x xor y"),
+                    0 => {
+                        let vy = self.registers[y as usize];
+                        self.set(x, vy);
+                    }
+                    1 => self.or_xy(x, y),
+                    2 => self.and_xy(x, y),
+                    3 => self.xor_xy(x, y),
                     4 => self.add_xy(x, y),
                     _ => todo!("opcode: {:04x}", opcode),
                 },
@@ -112,6 +115,27 @@ impl CPU {
     /// 7xkk: add kk to register x
     fn add(&mut self, vx: u8, kk: u8) {
         self.registers[vx as usize] += kk;
+    }
+
+    fn and_xy(&mut self, x: u8, y: u8) {
+        let vx = self.registers[x as usize];
+        let vy = self.registers[y as usize];
+
+        self.registers[x as usize] = vx & vy;
+    }
+
+    fn or_xy(&mut self, x: u8, y: u8) {
+        let vx = self.registers[x as usize];
+        let vy = self.registers[y as usize];
+
+        self.registers[x as usize] = vx | vy;
+    }
+
+    fn xor_xy(&mut self, x: u8, y: u8) {
+        let vx = self.registers[x as usize];
+        let vy = self.registers[y as usize];
+
+        self.registers[x as usize] = vx ^ vy;
     }
 
     /// 8xy4: add vy to vx
