@@ -30,13 +30,9 @@ impl CPU {
                 0x00EE => self.ret(),
                 0x1000..=0x1FFF => self.jump(addr),
                 0x2000..=0x2FFF => self.call(addr),
-                0x3000..=0x3FFF => self.se(self.registers[x as usize], kk),
+                0x3000..=0x3FFF => self.se_xkk(x, kk),
                 0x4000..=0x4FFF => self.sne(self.registers[x as usize], kk),
-                0x5000..=0x5FFF => {
-                    let vx = self.registers[x as usize];
-                    let vy = self.registers[y as usize];
-                    self.se(vx, vy);
-                }
+                0x5000..=0x5FFF => self.se_xy(x, y),
                 0x6000..=0x6FFF => self.set(x, kk),
                 0x7000..=0x7FFF => self.add(x, kk),
                 0x8000..=0x8FFF => match op_minor {
@@ -83,9 +79,8 @@ impl CPU {
     }
 
     /// 3xkk: store if vx == kk
-    /// 5xy0: store if vx == vy
-    fn se(&mut self, x: u8, y: u8) {
-        if x == y {
+    fn se_xkk(&mut self, x: u8, kk: u8) {
+        if self.registers[x as usize] == kk {
             self.program_counter += 2;
         }
     }
@@ -93,6 +88,15 @@ impl CPU {
     /// 4xkk: store if vx not equal kk
     fn sne(&mut self, vx: u8, kk: u8) {
         if vx != kk {
+            self.program_counter += 2;
+        }
+    }
+
+    /// 5xy0: store if vx == vy
+    fn se_xy(&mut self, x: u8, y: u8) {
+        let vx = self.registers[x as usize];
+        let vy = self.registers[y as usize];
+        if vx == vy {
             self.program_counter += 2;
         }
     }
