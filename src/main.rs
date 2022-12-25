@@ -24,11 +24,11 @@ impl CPU {
 
             self.program_counter += 2; // 1 opcode = 2 u8
 
-            match (opcode) {
+            match opcode {
                 0x0000 => return,
                 0x00E0 => { /* CLRSCR */ }
                 0x00EE => self.ret(),
-                0x1000..=0x1FFF => todo!("jump to addr"),
+                0x1000..=0x1FFF => self.jump(addr),
                 0x2000..=0x2FFF => self.call(addr),
                 0x3000..=0x3FFF => todo!("set if equal"),
                 0x4000..=0x4FFF => todo!("set if not equal"),
@@ -48,7 +48,12 @@ impl CPU {
         }
     }
 
-    /// 0x7xkk
+    /// 0x1nnn: jump to nnn address
+    fn jump(&mut self, addr: u16) {
+        self.program_counter = addr as usize;
+    }
+
+    /// 0x7xkk: add kk to register x
     fn add(&mut self, vx: u8, kk: u8) {
         self.registers[vx as usize] += kk;
     }
